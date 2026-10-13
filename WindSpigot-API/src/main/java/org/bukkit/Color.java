@@ -244,14 +244,15 @@ public final class Color implements ConfigurationSerializable {
 	}
 
 	/**
-	 * Creates a new color with its RGB components changed as if it was dyed with
-	 * the colors passed in, replicating vanilla workbench dyeing
+	 * Mixes this color with the given dye colors.
+	 * <p>
+	 * Each dye is converted via {@link DyeColor#getColor()} and then combined
+	 * with this color using {@link #mixColors(Color...)}.
 	 *
-	 * @param colors The DyeColors to dye with
-	 * @return A new color with the changed rgb components
+	 * @param colors the dye colors to mix with this color (must not contain null)
+	 * @return a new {@link Color} that is the mix of this color and the dyes
+	 * @throws IllegalArgumentException if {@code colors} is null or contains null
 	 */
-	// TODO: Javadoc what this method does, not what it mimics. API !=
-	// Implementation
 	public Color mixDyes(DyeColor... colors) {
 		Validate.noNullElements(colors, "Colors cannot be null");
 
@@ -264,14 +265,22 @@ public final class Color implements ConfigurationSerializable {
 	}
 
 	/**
-	 * Creates a new color with its RGB components changed as if it was dyed with
-	 * the colors passed in, replicating vanilla workbench dyeing
+	 * Mixes this color with the given colors by averaging RGB channels, then
+	 * scaling so the result's brightest channel matches the average of each
+	 * input's brightest channel (including this color).
+	 * <p>
+	 * Specifically: for this color and every argument, the red, green, and blue
+	 * components are summed and divided by {@code colors.length + 1}. The same
+	 * average is taken of each color's {@code max(R, G, B)}. The averaged RGB
+	 * values are then multiplied by
+	 * {@code averageMax / max(averageR, averageG, averageB)} so overall
+	 * brightness is preserved relative to the inputs. Channel values are truncated
+	 * to integers in the usual 0–255 range via {@link #fromRGB(int, int, int)}.
 	 *
-	 * @param colors The colors to dye with
-	 * @return A new color with the changed rgb components
+	 * @param colors the colors to mix with this color (must not contain null)
+	 * @return a new {@link Color} that is the mix of this color and {@code colors}
+	 * @throws IllegalArgumentException if {@code colors} is null or contains null
 	 */
-	// TODO: Javadoc what this method does, not what it mimics. API !=
-	// Implementation
 	public Color mixColors(Color... colors) {
 		Validate.noNullElements(colors, "Colors cannot be null");
 
