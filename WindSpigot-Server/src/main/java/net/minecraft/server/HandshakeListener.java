@@ -60,14 +60,14 @@ public class HandshakeListener implements PacketHandshakingInListener {
 			}
 			// CraftBukkit end
 
-			if (packethandshakinginsetprotocol.b() > 47) {
-				text = new ChatComponentText(
-						java.text.MessageFormat.format(org.spigotmc.SpigotConfig.outdatedServerMessage, "1.8.8")); // Spigot
+			if (packethandshakinginsetprotocol.b() > MinecraftServer.PROTOCOL_VERSION) {
+				text = new ChatComponentText(java.text.MessageFormat.format(
+						org.spigotmc.SpigotConfig.outdatedServerMessage, MinecraftServer.MINECRAFT_VERSION)); // Spigot
 				this.b.handle(new PacketLoginOutDisconnect(text));
 				this.b.close(text);
-			} else if (packethandshakinginsetprotocol.b() < 47) {
-				text = new ChatComponentText(
-						java.text.MessageFormat.format(org.spigotmc.SpigotConfig.outdatedClientMessage, "1.8.8")); // Spigot
+			} else if (packethandshakinginsetprotocol.b() < MinecraftServer.PROTOCOL_VERSION) {
+				text = new ChatComponentText(java.text.MessageFormat.format(
+						org.spigotmc.SpigotConfig.outdatedClientMessage, MinecraftServer.MINECRAFT_VERSION)); // Spigot
 				this.b.handle(new PacketLoginOutDisconnect(text));
 				this.b.close(text);
 			} else {

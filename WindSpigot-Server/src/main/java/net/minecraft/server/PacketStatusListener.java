@@ -138,12 +138,10 @@ public class PacketStatusListener implements PacketStatusInListener {
 		ping.setFavicon(event.icon.value);
 		ping.setMOTD(new ChatComponentText(event.getMotd()));
 		ping.setPlayerSample(playerSample);
-		ping.setServerInfo(
-				new ServerPing.ServerData(minecraftServer.getServerModName() + " " + minecraftServer.getVersion(), 47)); // TODO:
-																															// Update
-																															// when
-																															// protocol
-																															// changes
+		// WindSpigot is single-protocol 1.8.8; see MinecraftServer.PROTOCOL_VERSION
+		ping.setServerInfo(new ServerPing.ServerData(
+				minecraftServer.getServerModName() + " " + minecraftServer.getVersion(),
+				MinecraftServer.PROTOCOL_VERSION));
 
 		this.networkManager.handle(new PacketStatusOutServerInfo(ping));
 		// CraftBukkit end

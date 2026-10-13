@@ -58,6 +58,16 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
 
 	public static final Logger LOGGER = LogManager.getLogger();
 	public static final File a = new File("usercache.json");
+	/**
+	 * Minecraft version this fork targets. WindSpigot is a single-protocol 1.8.8
+	 * server — not a multi-version proxy.
+	 */
+	public static final String MINECRAFT_VERSION = "1.8.8";
+	/**
+	 * Network protocol for {@link #MINECRAFT_VERSION} (1.8 / 1.8.8 → 47). Status
+	 * pings and handshake checks use this; there is no runtime protocol switching.
+	 */
+	public static final int PROTOCOL_VERSION = 47;
 	private static MinecraftServer l;
 	public Convertable convertable;
 	private final MojangStatisticsGenerator n = new MojangStatisticsGenerator("server", this, az());
@@ -653,7 +663,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
 
 				this.ab = getNanoTime(); // PandaSpigot - Modern Tick Loop
 				this.r.setMOTD(new ChatComponentText(this.motd));
-				this.r.setServerInfo(new ServerPing.ServerData("1.8.8", 47));
+				this.r.setServerInfo(new ServerPing.ServerData(MINECRAFT_VERSION, PROTOCOL_VERSION));
 				this.a(this.r);
 
 				// Spigot start
@@ -1192,7 +1202,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
 	}
 
 	public String getVersion() {
-		return "1.8.8";
+		return MINECRAFT_VERSION;
 	}
 
 	public int I() {
