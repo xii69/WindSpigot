@@ -1804,7 +1804,7 @@ public abstract class EntityHuman extends EntityLiving {
 
 	@Override
 	public IChatBaseComponent getScoreboardDisplayName() {
-		// CraftBukkit - todo: fun
+		// Vanilla player display: team-prefixed name, /msg suggest-click, entity hover, shift-click insert
 		ChatComponentText chatcomponenttext = new ChatComponentText(
 				ScoreboardTeam.getPlayerDisplayName(this.getScoreboardTeam(), this.getName()));
 
