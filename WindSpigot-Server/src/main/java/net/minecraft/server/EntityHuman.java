@@ -19,7 +19,6 @@ import org.bukkit.util.Vector;
 // CraftBukkit end
 
 import com.google.common.base.Charsets;
-import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
 import com.windpvp.windspigot.knockback.KnockbackConfig;
 
@@ -550,22 +549,20 @@ public abstract class EntityHuman extends EntityLiving {
 
 	}
 
-	private Collection e(Entity entity) { // CraftBukkit - TODO: Check me?
+	// CraftBukkit - collect ScoreboardScores via ScoreboardManager (SPIGOT-2056 / all boards),
+	// not raw ScoreboardObjectives from the world board (ClassCastException in b())
+	private Collection<ScoreboardScore> e(Entity entity) {
+		java.util.ArrayList<ScoreboardScore> collection = new java.util.ArrayList<ScoreboardScore>();
+
 		ScoreboardTeam scoreboardteam = this.getScoreboard().getPlayerTeam(this.getName());
 
 		if (scoreboardteam != null) {
 			int i = scoreboardteam.l().b();
 
 			if (i >= 0 && i < IScoreboardCriteria.i.length) {
-				Iterator iterator = this.getScoreboard().getObjectivesForCriteria(IScoreboardCriteria.i[i]).iterator();
-
-				while (iterator.hasNext()) {
-					ScoreboardObjective scoreboardobjective = (ScoreboardObjective) iterator.next();
-					ScoreboardScore scoreboardscore = this.getScoreboard().getPlayerScoreForObjective(entity.getName(),
-							scoreboardobjective);
-
-					scoreboardscore.incrementScore();
-				}
+				// killedByTeam.<color> scores for the victim
+				this.world.getServer().getScoreboardManager().getScoreboardScores(IScoreboardCriteria.i[i],
+						entity.getName(), collection);
 			}
 		}
 
@@ -575,11 +572,13 @@ public abstract class EntityHuman extends EntityLiving {
 			int j = scoreboardteam1.l().b();
 
 			if (j >= 0 && j < IScoreboardCriteria.h.length) {
-				return this.getScoreboard().getObjectivesForCriteria(IScoreboardCriteria.h[j]);
+				// teamkill.<color> scores for the killer
+				this.world.getServer().getScoreboardManager().getScoreboardScores(IScoreboardCriteria.h[j],
+						this.getName(), collection);
 			}
 		}
 
-		return Lists.newArrayList();
+		return collection;
 	}
 
 	public EntityItem a(boolean flag) {
