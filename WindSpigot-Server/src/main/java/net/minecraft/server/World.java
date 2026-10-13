@@ -368,7 +368,7 @@ public abstract class World implements IBlockAccess {
 
 	private boolean isValidLocation(int blockposition_x, int blockposition_y, int blockposition_z) {
 		return blockposition_x >= -30000000 && blockposition_z >= -30000000 && blockposition_x < 30000000
-				&& blockposition_z < 30000000 && blockposition_z >= 0 && blockposition_y < 256;
+				&& blockposition_z < 30000000 && blockposition_y >= 0 && blockposition_y < 256;
 	}
 
 	@Override
@@ -969,21 +969,8 @@ public abstract class World implements IBlockAccess {
 		}
 	}
 
-	// TODO: Note: replace all childern
 	public int b(EnumSkyBlock enumskyblock, BlockPosition blockposition) {
-		if (blockposition.getY() < 0) {
-			blockposition = new BlockPosition(blockposition.getX(), 0, blockposition.getZ());
-		}
-
-		if (!this.isValidLocation(blockposition)) {
-			return enumskyblock.c;
-		} else if (!this.isLoaded(blockposition)) {
-			return enumskyblock.c;
-		} else {
-			Chunk chunk = this.getChunkAtWorldCoords(blockposition);
-
-			return chunk.getBrightness(enumskyblock, blockposition);
-		}
+		return this.b(enumskyblock, blockposition.getX(), blockposition.getY(), blockposition.getZ());
 	}
 
 	public void a(EnumSkyBlock enumskyblock, BlockPosition blockposition, int i) {
