@@ -51,7 +51,9 @@ public class CraftBlock implements Block {
 	}
 
 	private net.minecraft.server.Block getNMSBlock() {
-		return CraftMagicNumbers.getBlock(this); // TODO: UPDATE THIS
+		// Read NMS Block directly from the chunk (same source as getTypeId/getData).
+		// Avoids CraftMagicNumbers.getBlock(this) → Material → legacy ID → Block round-trip.
+		return chunk.getHandle().getType(new BlockPosition(this.x, this.y, this.z));
 	}
 
 	private static net.minecraft.server.Block getNMSBlock(int type) {
