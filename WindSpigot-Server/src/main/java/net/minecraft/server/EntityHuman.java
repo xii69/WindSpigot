@@ -66,6 +66,7 @@ public abstract class EntityHuman extends EntityLiving {
 	public boolean affectsSpawning = true; // PaperSpigot
 
 	// CraftBukkit start
+	public boolean canPickUpLoot = true; // CraftBukkit - players pick up by default; LivingEntity API
 	public boolean fauxSleeping;
 	public String spawnWorld = "";
 	public int oldLevel = -1;

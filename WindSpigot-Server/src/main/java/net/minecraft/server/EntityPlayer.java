@@ -117,7 +117,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
 
 		// CraftBukkit start
 		this.displayName = this.getName();
-		// this.canPickUpLoot = true; TODO
+		this.canPickUpLoot = true;
 		this.maxHealthCache = this.getMaxHealth();
 		// CraftBukkit end
 	}

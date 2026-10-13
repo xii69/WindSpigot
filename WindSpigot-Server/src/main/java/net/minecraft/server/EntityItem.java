@@ -356,7 +356,7 @@ public class EntityItem extends Entity implements HopperPusher {
 				PlayerPickupItemEvent event = new PlayerPickupItemEvent(
 						(org.bukkit.entity.Player) entityhuman.getBukkitEntity(),
 						(org.bukkit.entity.Item) this.getBukkitEntity(), remaining);
-				// event.setCancelled(!entityhuman.canPickUpLoot); TODO
+				event.setCancelled(!entityhuman.canPickUpLoot);
 				this.world.getServer().getPluginManager().callEvent(event);
 				itemstack.count = canHold + remaining;
 
