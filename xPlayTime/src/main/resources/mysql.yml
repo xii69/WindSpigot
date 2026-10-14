@@ -1,0 +1,35 @@
+# xPlayTime MariaDB / MySQL configuration
+# Reload with: /playtime reload (permission: xplaytime.admin)
+
+host: 127.0.0.1
+port: 3306
+database: xplaytime
+username: xplaytime
+password: change-me
+
+# JDBC extras (optional). Leave empty for defaults.
+# Example: useSSL=false&allowPublicKeyRetrieval=true
+jdbc-params: "useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=utf8"
+
+pool:
+  # Keep small on a proxy — playtime traffic is bursty, not continuous.
+  maximum-pool-size: 4
+  minimum-idle: 1
+  connection-timeout-ms: 10000
+  idle-timeout-ms: 600000
+  max-lifetime-ms: 1800000
+
+tracking:
+  # How often dirty in-memory session deltas are flushed to MariaDB.
+  flush-interval-seconds: 60
+  # Debounce: skip a flush tick when nothing changed.
+  skip-empty-flushes: true
+  # Checkpoint online sessions so a crash loses at most this much playtime.
+  online-checkpoint: true
+
+rollup:
+  # Website aggregate table refresh interval.
+  interval-minutes: 30
+  # Run once shortly after enable so the site has data without waiting a full cycle.
+  run-on-startup: true
+  startup-delay-seconds: 15

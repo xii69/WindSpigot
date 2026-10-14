@@ -1,0 +1,8 @@
+{
+  "id": "xplaytime",
+  "name": "xPlayTime",
+  "version": "${version}",
+  "description": "Low-overhead player playtime tracking for Velocity with MariaDB storage",
+  "authors": ["xPlayTime"],
+  "main": "dev.xplaytime.XPlayTimePlugin"
+}

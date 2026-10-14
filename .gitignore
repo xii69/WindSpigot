@@ -23,3 +23,8 @@ local.properties
 # Locally stored "Eclipse launch configurations"
 *.launch
 
+
+# xPlayTime / local Velocity test harness
+velocity-test/
+xPlayTime/.gradle/
+xPlayTime/build/
