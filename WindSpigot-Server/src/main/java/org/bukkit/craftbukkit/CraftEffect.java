@@ -18,34 +18,21 @@ public class CraftEffect {
 			datavalue = ((Material) data).getId();
 			break;
 		case SMOKE:
-			switch ((BlockFace) data) { // TODO: Verify (Where did these values come from...?)
-			case SOUTH_EAST:
-				datavalue = 0;
-				break;
-			case SOUTH:
-				datavalue = 1;
-				break;
-			case SOUTH_WEST:
-				datavalue = 2;
-				break;
-			case EAST:
-				datavalue = 3;
-				break;
-			case UP:
-			case SELF:
-				datavalue = 4;
-				break;
-			case WEST:
-				datavalue = 5;
-				break;
-			case NORTH_EAST:
-				datavalue = 6;
-				break;
-			case NORTH:
-				datavalue = 7;
-				break;
+			// WindSpigot - 1.8 smoke data = (dx+1)+(dz+1)*3
+			BlockFace face = (BlockFace) data;
+			switch (face) {
 			case NORTH_WEST:
-				datavalue = 8;
+			case NORTH:
+			case NORTH_EAST:
+			case WEST:
+			case EAST:
+			case SOUTH_WEST:
+			case SOUTH:
+			case SOUTH_EAST:
+			case UP:
+			case DOWN:
+			case SELF:
+				datavalue = face.getModX() + 1 + (face.getModZ() + 1) * 3;
 				break;
 			default:
 				throw new IllegalArgumentException("Bad smoke direction!");
