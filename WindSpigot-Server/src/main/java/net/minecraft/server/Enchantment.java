@@ -58,6 +58,13 @@ public abstract class Enchantment {
 		return i >= 0 && i < Enchantment.byId.length ? Enchantment.byId[i] : null;
 	}
 
+	// WindSpigot - force class init for Bukkit enchant registration
+	public static void ensureBukkitRegistration() {
+		if (Enchantment.DAMAGE_ALL == null || Enchantment.b == null || Enchantment.b.length == 0) {
+			throw new IllegalStateException("NMS Enchantment failed to initialize");
+		}
+	}
+
 	protected Enchantment(int i, MinecraftKey minecraftkey, int j, EnchantmentSlotType enchantmentslottype) {
 		this.id = i;
 		this.weight = j;

@@ -101,6 +101,13 @@ public class MobEffectList {
 				.registerPotionEffectType(new org.bukkit.craftbukkit.potion.CraftPotionEffectType(this)); // CraftBukkit
 	}
 
+	// WindSpigot - force class init for Bukkit potion registration
+	public static void ensureBukkitRegistration() {
+		if (MobEffectList.BLINDNESS == null || MobEffectList.byId[MobEffectList.BLINDNESS.id] == null) {
+			throw new IllegalStateException("NMS MobEffectList failed to initialize");
+		}
+	}
+
 	public static MobEffectList b(String s) {
 		return MobEffectList.I.get(new MinecraftKey(s));
 	}
