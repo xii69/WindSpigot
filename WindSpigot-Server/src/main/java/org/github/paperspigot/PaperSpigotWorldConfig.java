@@ -53,8 +53,9 @@ public class PaperSpigotWorldConfig {
 	}
 
 	private float getFloat(String path, float def) {
-		// TODO: Figure out why getFloat() always returns the default value.
-		return (float) getDouble(path, def);
+		config.addDefault("world-settings.default." + path, def);
+		return config.getFloat("world-settings." + worldName + "." + path,
+				config.getFloat("world-settings.default." + path));
 	}
 
 	private <T> List getList(String path, T def) {

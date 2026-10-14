@@ -104,8 +104,8 @@ public class PaperSpigotConfig {
 	}
 
 	private static float getFloat(String path, float def) {
-		// TODO: Figure out why getFloat() always returns the default value.
-		return (float) getDouble(path, def);
+		config.addDefault(path, def);
+		return config.getFloat(path, config.getFloat(path));
 	}
 
 	private static int getInt(String path, int def) {
