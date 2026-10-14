@@ -1241,8 +1241,9 @@ public abstract class Entity implements ICommandListener {
 		this.P = this.lastX = this.locX = d0;
 		this.Q = this.lastY = this.locY = d1;
 		this.R = this.lastZ = this.locZ = d2;
-		this.yaw = f;
-		this.pitch = f1;
+		// WindSpigot - sanitize NaN/Inf (setPositionRotation bypasses setYawPitch)
+		this.yaw = Float.isFinite(f) ? f : 0.0F;
+		this.pitch = Float.isFinite(f1) ? f1 : 0.0F;
 		this.setPosition(this.locX, this.locY, this.locZ);
 	}
 
@@ -1440,16 +1441,9 @@ public abstract class Entity implements ICommandListener {
 			nbttagcompound.set("Pos", this.a(new double[] { this.locX, this.locY, this.locZ }));
 			nbttagcompound.set("Motion", this.a(new double[] { this.motX, this.motY, this.motZ }));
 
-			// CraftBukkit start - Checking for NaN pitch/yaw and resetting to zero
-			// TODO: make sure this is the best way to address this.
-			if (Float.isNaN(this.yaw)) {
-				this.yaw = 0;
-			}
-
-			if (Float.isNaN(this.pitch)) {
-				this.pitch = 0;
-			}
-			// CraftBukkit end
+			// CraftBukkit / WindSpigot - sanitize NaN/Inf before Rotation NBT
+			this.yaw = Float.isFinite(this.yaw) ? this.yaw : 0.0F;
+			this.pitch = Float.isFinite(this.pitch) ? this.pitch : 0.0F;
 
 			nbttagcompound.set("Rotation", this.a(new float[] { this.yaw, this.pitch }));
 			nbttagcompound.setFloat("FallDistance", this.fallDistance);
