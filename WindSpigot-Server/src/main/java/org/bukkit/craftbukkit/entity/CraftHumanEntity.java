@@ -14,6 +14,7 @@ import org.bukkit.craftbukkit.inventory.CraftInventoryPlayer;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.inventory.Inventory;
@@ -217,12 +218,24 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
 
 	@Override
 	public InventoryView openInventory(Inventory inventory) {
-		if (!(getHandle() instanceof EntityPlayer)) {
-			return null;
+		EntityHuman handle = getHandle();
+		boolean entityPlayer = handle instanceof EntityPlayer;
+		boolean connectionPresent = entityPlayer && ((EntityPlayer) handle).playerConnection != null;
+
+		// NPC / no client: CraftContainer bind without packets (mirrors InventoryView path)
+		if (!(entityPlayer && connectionPresent)) {
+			int windowId = entityPlayer ? ((EntityPlayer) handle).nextContainerCounter() : 0;
+			Container container = new CraftContainer(inventory, this, windowId);
+			if (!bindContainerServerSide(container)) {
+				return null;
+			}
+			handle.activeContainer.checkReachable = false;
+			return handle.activeContainer.getBukkitView();
 		}
-		EntityPlayer player = (EntityPlayer) getHandle();
+
+		EntityPlayer player = (EntityPlayer) handle;
 		InventoryType type = inventory.getType();
-		Container formerContainer = getHandle().activeContainer;
+		Container formerContainer = handle.activeContainer;
 
 		IInventory iinventory = (inventory instanceof CraftInventory) ? ((CraftInventory) inventory).getInventory()
 				: new org.bukkit.craftbukkit.inventory.InventoryWrapper(inventory);
@@ -375,18 +388,21 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
 
 	@Override
 	public void openInventory(InventoryView inventory) {
-		if (!(getHandle() instanceof EntityPlayer)) {
-			return; // TODO: NPC support?
-		}
-		if (((EntityPlayer) getHandle()).playerConnection == null) {
+		EntityHuman handle = getHandle();
+		boolean entityPlayer = handle instanceof EntityPlayer;
+		boolean connectionPresent = entityPlayer && ((EntityPlayer) handle).playerConnection != null;
+
+		if (!(entityPlayer && connectionPresent)) {
+			// NPC / EntityPlayer without connection: bind activeContainer only (no packets)
+			openInventoryServerSide(inventory);
 			return;
 		}
-		if (getHandle().activeContainer != getHandle().defaultContainer) {
+
+		EntityPlayer player = (EntityPlayer) handle;
+		if (handle.activeContainer != handle.defaultContainer) {
 			// fire INVENTORY_CLOSE if one already open
-			((EntityPlayer) getHandle()).playerConnection
-					.a(new PacketPlayInCloseWindow(getHandle().activeContainer.windowId));
+			player.playerConnection.a(new PacketPlayInCloseWindow(handle.activeContainer.windowId));
 		}
-		EntityPlayer player = (EntityPlayer) getHandle();
 		Container container;
 		if (inventory instanceof CraftInventoryView) {
 			container = ((CraftInventoryView) inventory).getHandle();
@@ -409,6 +425,41 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
 				new PacketPlayOutOpenWindow(container.windowId, windowType, new ChatComponentText(title), size));
 		player.activeContainer = container;
 		player.activeContainer.addSlotListener(player);
+	}
+
+	// WindSpigot - NPC / no connection: bind without packets
+	private void openInventoryServerSide(InventoryView inventory) {
+		EntityHuman human = getHandle();
+		Container container;
+		if (inventory instanceof CraftInventoryView) {
+			container = ((CraftInventoryView) inventory).getHandle();
+		} else {
+			int windowId = human instanceof EntityPlayer ? ((EntityPlayer) human).nextContainerCounter() : 0;
+			container = new CraftContainer(inventory, windowId);
+		}
+		bindContainerServerSide(container);
+	}
+
+	private boolean bindContainerServerSide(Container container) {
+		EntityHuman human = getHandle();
+
+		if (human.activeContainer != human.defaultContainer) {
+			CraftEventFactory.handleInventoryCloseEvent(human);
+			human.activeContainer.b(human);
+			human.activeContainer = human.defaultContainer;
+		}
+
+		human.activeContainer.transferTo(container, this);
+
+		InventoryOpenEvent event = new InventoryOpenEvent(container.getBukkitView());
+		server.getPluginManager().callEvent(event);
+		if (event.isCancelled()) {
+			container.transferTo(human.activeContainer, this);
+			return false;
+		}
+
+		human.activeContainer = container;
+		return true;
 	}
 
 	@Override

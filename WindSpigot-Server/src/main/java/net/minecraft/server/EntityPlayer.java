@@ -902,7 +902,10 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
 	@Override
 	public void closeInventory() {
 		CraftEventFactory.handleInventoryCloseEvent(this); // CraftBukkit
-		this.playerConnection.sendPacket(new PacketPlayOutCloseWindow(this.activeContainer.windowId));
+		// WindSpigot - NPCs / EntityPlayers without a connection (e.g. Citizens) must not NPE
+		if (this.playerConnection != null) {
+			this.playerConnection.sendPacket(new PacketPlayOutCloseWindow(this.activeContainer.windowId));
+		}
 		this.p();
 	}
 
