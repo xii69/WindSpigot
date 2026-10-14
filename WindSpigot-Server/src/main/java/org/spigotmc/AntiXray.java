@@ -7,8 +7,8 @@ import java.util.Set;
 import org.bukkit.craftbukkit.util.CraftMagicNumbers;
 
 import co.aikar.timings.SpigotTimings;
-import it.unimi.dsi.fastutil.bytes.ByteOpenHashSet;
-import it.unimi.dsi.fastutil.bytes.ByteSet;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import net.minecraft.server.Block;
 import net.minecraft.server.BlockPosition;
 import net.minecraft.server.Blocks;
@@ -22,10 +22,10 @@ import net.techcable.tacospigot.utils.BlockHelper;
 
 public class AntiXray {
 
-	// Used to keep track of which blocks to obfuscate
-	private final boolean[] obfuscateBlocks = new boolean[Short.MAX_VALUE];
-	// Used to select a random replacement ore
-	private final byte[] replacementOres;
+	// WindSpigot - 1.8 block ids are 0–4095 (12-bit)
+	private final boolean[] obfuscateBlocks = new boolean[4096];
+	// WindSpigot - full 12-bit ids (was byte[] and truncated)
+	private final char[] replacementOres;
 	// PaperSpigot start
 	public boolean queueUpdates = true;
 	public final Set<BlockPosition> pendingUpdates = new HashSet<BlockPosition>();
@@ -34,21 +34,30 @@ public class AntiXray {
 	public AntiXray(SpigotWorldConfig config) {
 		// Set all listed blocks as true to be obfuscated
 		for (int id : (config.engineMode == 1) ? config.hiddenBlocks : config.replaceBlocks) {
-			obfuscateBlocks[id] = true;
+			if (id >= 0 && id <= 4095) { // WindSpigot
+				obfuscateBlocks[id] = true;
+			}
 		}
 
 		// For every block
-		ByteSet blocks = new ByteOpenHashSet(); // SportPaper: trove -> fastutil
+		IntSet blocks = new IntOpenHashSet(); // SportPaper: trove -> fastutil
 		for (Integer i : config.hiddenBlocks) {
+			if (i == null || i < 0 || i > 4095) { // WindSpigot
+				continue;
+			}
 			Block block = Block.getById(i);
 			// Check it exists and is not a tile entity
 			if (block != null && !block.isTileEntity()) {
 				// Add it to the set of replacement blocks
-				blocks.add((byte) (int) i);
+				blocks.add(i.intValue());
 			}
 		}
-		// Bake it to a flat array of replacements
-		replacementOres = blocks.toByteArray(); // SportPaper: trove -> fastutil
+		// Bake it to a flat array of replacements (12-bit ids)
+		int[] baked = blocks.toIntArray();
+		replacementOres = new char[baked.length];
+		for (int i = 0; i < baked.length; i++) {
+			replacementOres[i] = (char) baked[i];
+		}
 	}
 
 	/**
@@ -115,16 +124,16 @@ public class AntiXray {
 			int startX = chunkX << 4;
 			int startZ = chunkY << 4;
 
-			byte replaceWithTypeId;
+			int replaceWithTypeId; // WindSpigot - int, not truncated byte
 			switch (world.getWorld().getEnvironment()) {
 			case NETHER:
-				replaceWithTypeId = (byte) CraftMagicNumbers.getId(Blocks.NETHERRACK);
+				replaceWithTypeId = CraftMagicNumbers.getId(Blocks.NETHERRACK);
 				break;
 			case THE_END:
-				replaceWithTypeId = (byte) CraftMagicNumbers.getId(Blocks.END_STONE);
+				replaceWithTypeId = CraftMagicNumbers.getId(Blocks.END_STONE);
 				break;
 			default:
-				replaceWithTypeId = (byte) CraftMagicNumbers.getId(Blocks.STONE);
+				replaceWithTypeId = CraftMagicNumbers.getId(Blocks.STONE);
 				break;
 			}
 
@@ -141,16 +150,16 @@ public class AntiXray {
 							for (int x = 0; x < 16; x++) {
 								// For some reason we can get too far ahead of ourselves (concurrent
 								// modification on bulk chunks?) so if we do, just abort and move on
-								if (index >= buffer.length) {
+								// WindSpigot - index is a block slot; each slot is 2 bytes
+								if ((index << 1) + 1 >= buffer.length) {
 									index++;
 									continue;
 								}
-								// Grab the block ID in the buffer.
-								// TODO: extended IDs are not yet supported
-								int blockId = (buffer[index << 1] & 0xFF) | ((buffer[(index << 1) + 1] & 0xFF) << 8);
-								blockId >>>= 4;
+								// WindSpigot - 1.8 little-endian char: (blockId << 4) | meta
+								int blockId = ((buffer[index << 1] & 0xFF)
+										| ((buffer[(index << 1) + 1] & 0xFF) << 8)) >>> 4;
 								// Check if the block should be obfuscated
-								if (obfuscateBlocks[blockId]) {
+								if (blockId >= 0 && blockId <= 4095 && obfuscateBlocks[blockId]) { // WindSpigot
 									// The world isn't loaded, bail out
 									// TacoSpigot start
 									pos.setValues(startX + x, (i << 4) + y, startZ + z);
@@ -171,14 +180,17 @@ public class AntiXray {
 										switch (world.spigotConfig.engineMode) {
 										case 1:
 											// Replace with replacement material
-											newId = replaceWithTypeId & 0xFF;
+											newId = replaceWithTypeId;
 											break;
 										case 2:
 											// Replace with random ore.
+											if (replacementOres.length == 0) { // WindSpigot
+												break;
+											}
 											if (randomOre >= replacementOres.length) {
 												randomOre = 0;
 											}
-											newId = replacementOres[randomOre++] & 0xFF;
+											newId = replacementOres[randomOre++];
 											break;
 										}
 										newId <<= 4;
@@ -228,7 +240,8 @@ public class AntiXray {
 			Block block = getType(world, position); // TacoSpigot - directly access the underlying data
 
 			// See if it needs update
-			if (obfuscateBlocks[Block.getId(block)]) // TacoSpigot - always update
+			int id = Block.getId(block);
+			if (id >= 0 && id <= 4095 && obfuscateBlocks[id]) // TacoSpigot - always update // WindSpigot
 			{
 				// Send the update
 				world.notify(position);
