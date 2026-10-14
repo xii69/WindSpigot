@@ -20,7 +20,12 @@ public interface Repairable {
 	int getRepairCost();
 
 	/**
-	 * Sets the repair penalty
+	 * Sets the repair penalty.
+	 * <p>
+	 * There is no Bukkit upper bound: the value is stored as a vanilla NBT
+	 * {@code int}. The anvil “too expensive” cap (40 levels in 1.8) applies to
+	 * the XP cost of the current anvil operation, not this field. Non-positive
+	 * values clear {@link #hasRepairCost()}.
 	 *
 	 * @param cost repair penalty
 	 */

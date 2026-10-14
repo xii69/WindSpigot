@@ -764,7 +764,7 @@ class CraftMetaItem implements ItemMeta, Repairable {
 	}
 
 	@Override
-	public void setRepairCost(int cost) { // TODO: Does this have limits?
+	public void setRepairCost(int cost) { // WindSpigot - no Bukkit/API clamp (vanilla NBT int)
 		repairCost = cost;
 	}
 
