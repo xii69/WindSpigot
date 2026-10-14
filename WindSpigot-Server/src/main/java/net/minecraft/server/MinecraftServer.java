@@ -919,8 +919,11 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
 		if (i - this.X >= 5000000000L) {
 			this.X = i;
 			this.r.setPlayerSample(new ServerPing.ServerPingPlayerSample(this.J(), this.I()));
-			GameProfile[] agameprofile = new GameProfile[Math.min(this.I(), 12)];
-			int j = MathHelper.nextInt(ThreadLocalRandom.current(), 0, this.I() - agameprofile.length); // FalchusSpigot - ThreadLocalRandom
+			// Paper start - use SpigotConfig.playerSample (PaperServerListPingEvent)
+			GameProfile[] agameprofile = new GameProfile[Math.min(this.I(),
+					org.spigotmc.SpigotConfig.playerSample)];
+			int j = MathHelper.nextInt(ThreadLocalRandom.current(), 0,
+					Math.max(0, this.I() - agameprofile.length)); // FalchusSpigot - ThreadLocalRandom
 
 			for (int k = 0; k < agameprofile.length; ++k) {
 				agameprofile[k] = this.v.v().get(j + k).getProfile();
@@ -928,6 +931,7 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
 
 			Collections.shuffle(Arrays.asList(agameprofile));
 			this.r.b().a(agameprofile);
+			// Paper end
 		}
 
 		if (autosavePeriod > 0 && this.ticks % autosavePeriod == 0) { // CraftBukkit
@@ -1199,9 +1203,17 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
 		return this.v.getPlayerCount();
 	}
 
+	public int getPlayerCount() {
+		return I();
+	} // Paper - OBFHELPER
+
 	public int J() {
 		return this.v.getMaxPlayers();
 	}
+
+	public int getMaxPlayers() {
+		return J();
+	} // Paper - OBFHELPER
 
 	public String[] getPlayers() {
 		return this.v.f();
@@ -1655,6 +1667,10 @@ public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTas
 	public ServerPing aG() {
 		return this.r;
 	}
+
+	public ServerPing getServerPing() {
+		return aG();
+	} // Paper - OBFHELPER
 
 	public void aH() {
 		this.X = 0L;

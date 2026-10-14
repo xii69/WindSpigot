@@ -27,6 +27,11 @@ public class HandshakeListener implements PacketHandshakingInListener {
 	public void a(PacketHandshakingInSetProtocol packethandshakinginsetprotocol) {
 		switch (packethandshakinginsetprotocol.a()) {
 		case LOGIN: {
+			// Paper start - NetworkClient API
+			this.b.protocolVersion = packethandshakinginsetprotocol.b();
+			this.b.virtualHost = com.destroystokyo.paper.network.PaperNetworkClient.prepareVirtualHost(
+					packethandshakinginsetprotocol.hostname, packethandshakinginsetprotocol.port);
+			// Paper end
 			this.b.a(EnumProtocol.LOGIN);
 			ChatComponentText text;
 
@@ -129,6 +134,11 @@ public class HandshakeListener implements PacketHandshakingInListener {
 			break;
 		}
 		case STATUS: {
+			// Paper start - NetworkClient API
+			this.b.protocolVersion = packethandshakinginsetprotocol.b();
+			this.b.virtualHost = com.destroystokyo.paper.network.PaperNetworkClient.prepareVirtualHost(
+					packethandshakinginsetprotocol.hostname, packethandshakinginsetprotocol.port);
+			// Paper end
 			this.b.a(EnumProtocol.STATUS);
 			this.b.a(new PacketStatusListener(this.a, this.b));
 			break;
