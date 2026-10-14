@@ -66,7 +66,9 @@ public class Cake extends MaterialData {
 	public void setSlicesEaten(int n) {
 		if (n < 6) {
 			setData((byte) n);
-		} // TODO: else destroy the block? Probably not possible though
+		} else {
+			setData((byte) 6); // WindSpigot - clamp; MaterialData cannot destroy block
+		}
 	}
 
 	/**
