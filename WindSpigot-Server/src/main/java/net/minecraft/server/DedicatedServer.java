@@ -3,7 +3,6 @@ package net.minecraft.server;
 import java.io.File;
 import java.io.IOException;
 // CraftBukkit start
-import java.io.PrintStream;
 import java.net.InetAddress;
 import java.net.Proxy;
 import java.util.Random;
@@ -12,10 +11,8 @@ import java.util.concurrent.TimeUnit;
 
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.kqueue.KQueue;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bukkit.craftbukkit.LoggerOutputStream;
 import org.bukkit.craftbukkit.util.Waitable;
 import org.bukkit.event.server.RemoteServerCommandEvent;
 // CraftBukkit end
@@ -102,26 +99,8 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
 			}
 		};
 
-		// CraftBukkit start - TODO: handle command-line logging arguments
-		java.util.logging.Logger global = java.util.logging.Logger.getLogger("");
-		global.setUseParentHandlers(false);
-		for (java.util.logging.Handler handler : global.getHandlers()) {
-			global.removeHandler(handler);
-		}
-		global.addHandler(new org.bukkit.craftbukkit.util.ForwardLogHandler());
-
-		final org.apache.logging.log4j.core.Logger logger = ((org.apache.logging.log4j.core.Logger) LogManager
-				.getRootLogger());
-		for (org.apache.logging.log4j.core.Appender appender : logger.getAppenders().values()) {
-			if (appender instanceof org.apache.logging.log4j.core.appender.ConsoleAppender) {
-				logger.removeAppender(appender);
-			}
-		}
-
-		new Thread(new org.bukkit.craftbukkit.util.TerminalConsoleWriterThread(System.out, this.reader)).start();
-
-		System.setOut(new PrintStream(new LoggerOutputStream(logger, Level.INFO), true));
-		System.setErr(new PrintStream(new LoggerOutputStream(logger, Level.WARN), true));
+		// CraftBukkit start - handle command-line logging arguments
+		com.windpvp.windspigot.logging.CommandLineLogging.setup(this.options, this.reader);
 		// CraftBukkit end
 
 		thread.setDaemon(true);
