@@ -4,8 +4,13 @@ import java.util.Map;
 import java.util.Random;
 
 // CraftBukkit start
+import org.bukkit.craftbukkit.inventory.CraftInventoryCrafting;
+import org.bukkit.craftbukkit.inventory.CraftInventoryCustom;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.event.entity.SheepRegrowWoolEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerShearEntityEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 // CraftBukkit end
 
@@ -13,19 +18,46 @@ import com.google.common.collect.Maps;
 
 public class EntitySheep extends EntityAnimal {
 
-	private final InventoryCrafting bm = new InventoryCrafting(new Container() {
+	// WindSpigot start - dye mix matrix is never player-opened
+	private InventoryView sheepBukkitView;
+	private final Container sheepColorMix = new Container() {
 		@Override
 		public boolean a(EntityHuman entityhuman) {
 			return false;
 		}
 
-		// CraftBukkit start
 		@Override
 		public InventoryView getBukkitView() {
-			return null; // TODO: O.O
+			if (sheepBukkitView == null) {
+				final CraftInventoryCrafting top = new CraftInventoryCrafting(EntitySheep.this.bm, EntitySheep.this.bm.resultInventory);
+				final Inventory bottom = new CraftInventoryCustom(null, 0);
+				sheepBukkitView = new InventoryView() {
+					@Override
+					public Inventory getTopInventory() {
+						return top;
+					}
+
+					@Override
+					public Inventory getBottomInventory() {
+						return bottom;
+					}
+
+					@Override
+					public HumanEntity getPlayer() {
+						return null;
+					}
+
+					@Override
+					public InventoryType getType() {
+						return top.getType();
+					}
+				};
+			}
+			return sheepBukkitView;
 		}
-		// CraftBukkit end
-	}, 2, 1);
+	};
+	private final InventoryCrafting bm = new InventoryCrafting(this.sheepColorMix, 2, 1);
+	// WindSpigot end
 	private static final Map<EnumColor, float[]> bo = Maps.newEnumMap(EnumColor.class);
 	private int bp;
 	private PathfinderGoalEatTile bq = new PathfinderGoalEatTile(this);
@@ -245,7 +277,17 @@ public class EntitySheep extends EntityAnimal {
 
 		this.bm.getItem(0).setData(i);
 		this.bm.getItem(1).setData(j);
-		ItemStack itemstack = CraftingManager.getInstance().craft(this.bm, ((EntitySheep) entityanimal).world);
+		// WindSpigot start - pin lastCraftView for dye mix PrepareItemCraftEvent
+		CraftingManager crafting = CraftingManager.getInstance();
+		InventoryView previousView = crafting.lastCraftView;
+		crafting.lastCraftView = this.sheepColorMix.getBukkitView();
+		ItemStack itemstack;
+		try {
+			itemstack = crafting.craft(this.bm, ((EntitySheep) entityanimal).world);
+		} finally {
+			crafting.lastCraftView = previousView;
+		}
+		// WindSpigot end
 		int k;
 
 		if (itemstack != null && itemstack.getItem() == Items.DYE) {
