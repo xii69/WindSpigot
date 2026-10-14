@@ -6,6 +6,7 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 
+
 import net.minecraft.server.ChatComponentText;
 import net.minecraft.server.Container;
 import net.minecraft.server.EntityHuman;
@@ -22,9 +23,9 @@ public class CraftContainer extends Container {
 	public CraftContainer(InventoryView view, int id) {
 		this.view = view;
 		this.windowId = id;
-		// TODO: Do we need to check that it really is a CraftInventory?
-		IInventory top = ((CraftInventory) view.getTopInventory()).getInventory();
-		IInventory bottom = ((CraftInventory) view.getBottomInventory()).getInventory();
+		// Unwrap CraftInventory or wrap custom Bukkit inventories (no unchecked cast)
+		IInventory top = asNmsInventory(view.getTopInventory());
+		IInventory bottom = asNmsInventory(view.getBottomInventory());
 		cachedType = view.getType();
 		cachedTitle = view.getTitle();
 		cachedSize = getSize();
@@ -78,8 +79,8 @@ public class CraftContainer extends Container {
 		if (view.getPlayer() instanceof CraftPlayer) {
 			CraftPlayer player = (CraftPlayer) view.getPlayer();
 			String type = getNotchInventoryType(cachedType);
-			IInventory top = ((CraftInventory) view.getTopInventory()).getInventory();
-			IInventory bottom = ((CraftInventory) view.getBottomInventory()).getInventory();
+			IInventory top = asNmsInventory(view.getTopInventory());
+			IInventory bottom = asNmsInventory(view.getBottomInventory());
 			this.b.clear();
 			this.c.clear();
 			if (typeChanged) {
@@ -309,4 +310,11 @@ public class CraftContainer extends Container {
 	public boolean a(EntityHuman entity) {
 		return true;
 	}
+	private static IInventory asNmsInventory(Inventory inventory) {
+		if (inventory instanceof CraftInventory) {
+			return ((CraftInventory) inventory).getInventory();
+		}
+		return new InventoryWrapper(inventory); // WindSpigot - custom Bukkit inventories
+	}
+
 }

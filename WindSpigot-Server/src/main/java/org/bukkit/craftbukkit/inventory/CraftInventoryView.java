@@ -17,9 +17,7 @@ public class CraftInventoryView extends InventoryView {
 	private final CraftInventory viewing;
 
 	public CraftInventoryView(HumanEntity player, Inventory viewing, Container container) {
-		// TODO: Should we make sure it really IS a CraftHumanEntity first? And a
-		// CraftInventory?
-		this.player = (CraftHumanEntity) player;
+		this.player = (CraftHumanEntity) player; // WindSpigot - expect Craft types
 		this.viewing = (CraftInventory) viewing;
 		this.container = container;
 	}
