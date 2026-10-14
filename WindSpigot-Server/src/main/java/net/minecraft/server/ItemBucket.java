@@ -5,7 +5,6 @@ import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
 // CraftBukkit end
-import org.github.paperspigot.PaperSpigotConfig; // PaperSpigot
 
 import com.windpvp.windspigot.cache.Constants;
 
@@ -50,15 +49,13 @@ public class ItemBucket extends Item {
 								Items.WATER_BUCKET);
 
 						if (event.isCancelled()) {
+							resyncBucketCancel(entityhuman);
 							return itemstack;
 						}
 						// CraftBukkit end
 						world.setAir(blockposition);
 						entityhuman.b(StatisticList.USE_ITEM_COUNT[Item.getId(this)]);
-						return this.a(itemstack, entityhuman, Items.WATER_BUCKET, event.getItemStack()); // CraftBukkit
-																											// - added
-																											// Event
-																											// stack
+						return applyBucketEventResult(itemstack, entityhuman, event.getItemStack());
 					}
 
 					if (material == Material.LAVA && iblockdata.get(BlockFluids.LEVEL).intValue() == 0) {
@@ -68,14 +65,13 @@ public class ItemBucket extends Item {
 								Items.LAVA_BUCKET);
 
 						if (event.isCancelled()) {
+							resyncBucketCancel(entityhuman);
 							return itemstack;
 						}
 						// CraftBukkit end
 						world.setAir(blockposition);
 						entityhuman.b(StatisticList.USE_ITEM_COUNT[Item.getId(this)]);
-						return this.a(itemstack, entityhuman, Items.LAVA_BUCKET, event.getItemStack()); // CraftBukkit -
-																										// added Event
-																										// stack
+						return applyBucketEventResult(itemstack, entityhuman, event.getItemStack());
 					}
 				} else {
 					if (this.a == Blocks.AIR) {
@@ -85,10 +81,11 @@ public class ItemBucket extends Item {
 								movingobjectposition.direction, itemstack);
 
 						if (event.isCancelled()) {
+							resyncBucketCancel(entityhuman);
 							return itemstack;
 						}
 
-						return CraftItemStack.asNMSCopy(event.getItemStack());
+						return applyBucketEventResult(itemstack, entityhuman, event.getItemStack());
 						// CraftBukkit end
 					}
 
@@ -104,25 +101,15 @@ public class ItemBucket extends Item {
 							movingobjectposition.direction, itemstack);
 
 					if (event.isCancelled()) {
+						resyncBucketCancel(entityhuman);
 						return itemstack;
 					}
 					// CraftBukkit end
 
 					if (this.a(world, blockposition1) && !entityhuman.abilities.canInstantlyBuild) {
 						entityhuman.b(StatisticList.USE_ITEM_COUNT[Item.getId(this)]);
-						// PaperSpigot start - Stackable Buckets
-						if ((this == Items.LAVA_BUCKET && PaperSpigotConfig.stackableLavaBuckets)
-								|| (this == Items.WATER_BUCKET && PaperSpigotConfig.stackableWaterBuckets)) {
-							if (--itemstack.count <= 0) {
-								return CraftItemStack.asNMSCopy(event.getItemStack());
-							}
-							if (!entityhuman.inventory.pickup(CraftItemStack.asNMSCopy(event.getItemStack()))) {
-								entityhuman.drop(CraftItemStack.asNMSCopy(event.getItemStack()), false);
-							}
-							return itemstack;
-						}
-						// PaperSpigot end
-						return CraftItemStack.asNMSCopy(event.getItemStack()); // CraftBukkit
+						// CraftBukkit / PaperSpigot: honor event result for empty + stackable buckets
+						return applyBucketEventResult(itemstack, entityhuman, event.getItemStack());
 					}
 				}
 			}
@@ -131,20 +118,29 @@ public class ItemBucket extends Item {
 		}
 	}
 
-	// CraftBukkit - added ob.ItemStack result - TODO: Is this... the right way to
-	// handle this?
-	private ItemStack a(ItemStack itemstack, EntityHuman entityhuman, Item item,
+	// CraftBukkit: honor PlayerBucketEvent#getItemStack() (EntityCow milking pattern).
+	// Creative keeps the used bucket; survival consumes one and replaces hand or
+	// pickups/drops the result. Null event result → empty hand / no overflow item.
+	private static ItemStack applyBucketEventResult(ItemStack itemstack, EntityHuman entityhuman,
 			org.bukkit.inventory.ItemStack result) {
 		if (entityhuman.abilities.canInstantlyBuild) {
 			return itemstack;
-		} else if (--itemstack.count <= 0) {
-			return CraftItemStack.asNMSCopy(result); // CraftBukkit
-		} else {
-			if (!entityhuman.inventory.pickup(CraftItemStack.asNMSCopy(result))) {
-				entityhuman.drop(CraftItemStack.asNMSCopy(result), false);
-			}
+		}
 
-			return itemstack;
+		ItemStack nmsResult = CraftItemStack.asNMSCopy(result);
+		if (--itemstack.count <= 0) {
+			return nmsResult;
+		}
+		if (nmsResult != null && !entityhuman.inventory.pickup(nmsResult)) {
+			entityhuman.drop(nmsResult, false);
+		}
+		return itemstack;
+	}
+
+	/** SPIGOT-4541: client predicts bucket use; cancelled events need an inventory resync. */
+	private static void resyncBucketCancel(EntityHuman entityhuman) {
+		if (entityhuman instanceof EntityPlayer) {
+			((EntityPlayer) entityhuman).getBukkitEntity().updateInventory();
 		}
 	}
 
