@@ -3,6 +3,7 @@ package net.minecraft.server;
 // CraftBukkit start
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
+
 // CraftBukkit end
 
 public class ContainerChest extends Container {
@@ -41,8 +42,9 @@ public class ContainerChest extends Container {
 		int i = (this.f - 4) * 18;
 
 		// CraftBukkit start - Save player
-		// TODO: Should we check to make sure it really is an InventoryPlayer?
-		this.player = (PlayerInventory) iinventory;
+		// WindSpigot - type-check; fall back to opener inventory for atypical callers
+		this.player = iinventory instanceof PlayerInventory ? (PlayerInventory) iinventory
+				: (entityhuman != null ? entityhuman.inventory : null);
 		// CraftBukkit end
 
 		int j;

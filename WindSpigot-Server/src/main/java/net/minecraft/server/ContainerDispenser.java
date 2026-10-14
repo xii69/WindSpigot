@@ -3,6 +3,7 @@ package net.minecraft.server;
 // CraftBukkit start
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
+
 // CraftBukkit end
 
 public class ContainerDispenser extends Container {
@@ -16,8 +17,7 @@ public class ContainerDispenser extends Container {
 	public ContainerDispenser(IInventory iinventory, IInventory iinventory1) {
 		this.items = iinventory1;
 		// CraftBukkit start - Save player
-		// TODO: Should we check to make sure it really is an InventoryPlayer?
-		this.player = (PlayerInventory) iinventory;
+		this.player = (PlayerInventory) iinventory; // WindSpigot - expect PlayerInventory
 		// CraftBukkit end
 
 		int i;
