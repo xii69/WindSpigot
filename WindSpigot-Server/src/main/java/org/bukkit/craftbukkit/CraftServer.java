@@ -51,8 +51,8 @@ import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.generator.CraftChunkData;
 import org.bukkit.craftbukkit.help.SimpleHelpMap;
 import org.bukkit.craftbukkit.inventory.CraftFurnaceRecipe;
-import org.bukkit.craftbukkit.inventory.CraftInventoryCustom;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
+import org.bukkit.craftbukkit.inventory.util.CraftInventoryCreator;
 import org.bukkit.craftbukkit.inventory.CraftItemFactory;
 import org.bukkit.craftbukkit.inventory.CraftRecipe;
 import org.bukkit.craftbukkit.inventory.CraftShapedRecipe;
@@ -1753,25 +1753,26 @@ public final class CraftServer implements Server {
 
 	@Override
 	public Inventory createInventory(InventoryHolder owner, InventoryType type) {
-		// TODO: Create the appropriate type, rather than Custom?
-		return new CraftInventoryCustom(owner, type);
+		Validate.isTrue(type.isCreatable(), "Cannot open an inventory of type ", type);
+		return CraftInventoryCreator.INSTANCE.createInventory(owner, type);
 	}
 
 	@Override
 	public Inventory createInventory(InventoryHolder owner, InventoryType type, String title) {
-		return new CraftInventoryCustom(owner, type, title);
+		Validate.isTrue(type.isCreatable(), "Cannot open an inventory of type ", type);
+		return CraftInventoryCreator.INSTANCE.createInventory(owner, type, title);
 	}
 
 	@Override
 	public Inventory createInventory(InventoryHolder owner, int size) throws IllegalArgumentException {
 		Validate.isTrue(size % 9 == 0, "Chests must have a size that is a multiple of 9!");
-		return new CraftInventoryCustom(owner, size);
+		return CraftInventoryCreator.INSTANCE.createInventory(owner, size);
 	}
 
 	@Override
 	public Inventory createInventory(InventoryHolder owner, int size, String title) throws IllegalArgumentException {
 		Validate.isTrue(size % 9 == 0, "Chests must have a size that is a multiple of 9!");
-		return new CraftInventoryCustom(owner, size, title);
+		return CraftInventoryCreator.INSTANCE.createInventory(owner, size, title);
 	}
 
 	@Override
