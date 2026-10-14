@@ -227,6 +227,14 @@ public class CraftHumanEntity extends CraftLivingEntity implements HumanEntity {
 		IInventory iinventory = (inventory instanceof CraftInventory) ? ((CraftInventory) inventory).getInventory()
 				: new org.bukkit.craftbukkit.inventory.InventoryWrapper(inventory);
 
+		// WindSpigot - attach world for tile inventories created without one
+		if (iinventory instanceof TileEntity) {
+			TileEntity te = (TileEntity) iinventory;
+			if (!te.t()) {
+				te.a(getHandle().world);
+			}
+		}
+
 		switch (type) {
 		case PLAYER:
 		case CHEST:

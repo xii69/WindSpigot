@@ -1,5 +1,22 @@
 package org.bukkit.event.inventory;
 
+import org.bukkit.inventory.InventoryHolder;
+
+/**
+ * Represents the different kinds of inventories available in Bukkit.
+ * <p>
+ * Only InventoryTypes marked {@link #isCreatable()} can be created.
+ * <p>
+ * The current list of inventories that cannot be created via
+ * {@link org.bukkit.Bukkit#createInventory} are:
+ * <ul>
+ * <li>{@link InventoryType#CREATIVE} and {@link InventoryType#CRAFTING}</li>
+ * </ul>
+ *
+ * See {@link org.bukkit.Bukkit#createInventory} for more information.
+ *
+ * @see org.bukkit.Bukkit#createInventory(InventoryHolder, InventoryType)
+ */
 public enum InventoryType {
 
 	/**
@@ -26,7 +43,7 @@ public enum InventoryType {
 	 * A player's crafting inventory, with 4 CRAFTING slots and a RESULT slot. Also
 	 * implies that the 4 ARMOR slots are accessible.
 	 */
-	CRAFTING(5, "Crafting"),
+	CRAFTING(5, "Crafting", false),
 	/**
 	 * An enchantment table inventory, with two CRAFTING slots and three enchanting
 	 * buttons.
@@ -46,7 +63,7 @@ public enum InventoryType {
 	 * (The actual creative interface with the items is client-side and cannot be
 	 * altered by the server.)
 	 */
-	CREATIVE(9, "Creative"),
+	CREATIVE(9, "Creative", false),
 	/**
 	 * The merchant inventory, with 2 TRADE-IN slots, and 1 RESULT slot.
 	 */
@@ -70,10 +87,16 @@ public enum InventoryType {
 
 	private final int size;
 	private final String title;
+	private final boolean isCreatable;
 
 	private InventoryType(int defaultSize, String defaultTitle) {
+		this(defaultSize, defaultTitle, true);
+	}
+
+	private InventoryType(int defaultSize, String defaultTitle, boolean isCreatable) {
 		size = defaultSize;
 		title = defaultTitle;
+		this.isCreatable = isCreatable;
 	}
 
 	public int getDefaultSize() {
@@ -82,6 +105,16 @@ public enum InventoryType {
 
 	public String getDefaultTitle() {
 		return title;
+	}
+
+	/**
+	 * Denotes that this InventoryType can be created via the normal
+	 * {@link org.bukkit.Bukkit#createInventory} methods.
+	 *
+	 * @return if this InventoryType can be created and shown to a player
+	 */
+	public boolean isCreatable() {
+		return isCreatable;
 	}
 
 	public enum SlotType {
