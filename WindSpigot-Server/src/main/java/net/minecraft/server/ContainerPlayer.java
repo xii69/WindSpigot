@@ -77,11 +77,11 @@ public class ContainerPlayer extends Container {
 		CraftingManager.getInstance().lastCraftView = getBukkitView();
 		ItemStack craftResult = CraftingManager.getInstance().craft(this.craftInventory, this.h.world);
 		this.resultInventory.setItem(0, craftResult);
-		if (super.listeners.size() < 1) {
+		// WindSpigot - prefer owning player over listeners.get(0)
+		if (!(this.h instanceof EntityPlayer) || !super.listeners.contains(this.h)) {
 			return;
 		}
-
-		EntityPlayer player = (EntityPlayer) super.listeners.get(0); // TODO: Is this _always_ correct? Seems like it.
+		EntityPlayer player = (EntityPlayer) this.h;
 		player.playerConnection.sendPacket(new PacketPlayOutSetSlot(player.activeContainer.windowId, 0, craftResult));
 		// CraftBukkit end
 	}

@@ -58,14 +58,15 @@ public class ContainerWorkbench extends Container {
 		CraftingManager.getInstance().lastCraftView = getBukkitView();
 		ItemStack craftResult = CraftingManager.getInstance().craft(this.craftInventory, this.g);
 		this.resultInventory.setItem(0, craftResult);
-		if (super.listeners.size() < 1) {
-			return;
-		}
 		// See CraftBukkit PR #39
 		if (craftResult != null && craftResult.getItem() == Items.FILLED_MAP) {
 			return;
 		}
-		EntityPlayer player = (EntityPlayer) super.listeners.get(0); // TODO: Is this _always_ correct? Seems like it.
+		// WindSpigot - prefer owning player over listeners.get(0)
+		if (!(this.player.player instanceof EntityPlayer) || !super.listeners.contains(this.player.player)) {
+			return;
+		}
+		EntityPlayer player = (EntityPlayer) this.player.player;
 		player.playerConnection.sendPacket(new PacketPlayOutSetSlot(player.activeContainer.windowId, 0, craftResult));
 		// CraftBukkit end
 	}
