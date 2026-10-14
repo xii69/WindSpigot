@@ -7,10 +7,15 @@ import com.google.common.collect.Lists;
 
 public class WorldBorder {
 
+	// WindSpigot - named vanilla 1.8 border limits (was PAIL magic)
+	public static final double MAX_SIZE = 6.0E7D;
+	public static final double MAX_CENTER_COORDINATE = 3.0E7D;
+	public static final double MIN_SIZE = 1.0D;
+
 	private final List<IWorldBorderListener> a = Lists.newArrayList();
 	private double b = 0.0D;
 	private double c = 0.0D;
-	private double d = 6.0E7D;
+	private double d = MAX_SIZE;
 	private double e;
 	private long f;
 	private long g;

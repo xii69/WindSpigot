@@ -112,4 +112,22 @@ public interface WorldBorder {
 	 * @param distance The distance in blocks. (The default is 5 blocks.)
 	 */
 	public void setWarningDistance(int distance);
+
+	/**
+	 * Gets the maximum accepted border diameter (side length) in blocks.
+	 * Values passed to {@link #setSize(double)} / {@link #setSize(double, long)}
+	 * are clamped to this limit.
+	 *
+	 * @return The maximum border size.
+	 */
+	public double getMaxSize();
+
+	/**
+	 * Gets the maximum absolute value accepted for a border center x/z coordinate.
+	 * Values passed to {@link #setCenter(double, double)} are clamped to ± this
+	 * limit.
+	 *
+	 * @return The maximum absolute center coordinate.
+	 */
+	public double getMaxCenterCoordinate();
 }

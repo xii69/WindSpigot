@@ -6,6 +6,9 @@ import org.bukkit.WorldBorder;
 
 public class CraftWorldBorder implements WorldBorder {
 
+	// WindSpigot - seconds*1000 must fit in long
+	private static final long MAX_SIZE_TRANSITION_SECONDS = Long.MAX_VALUE / 1000L;
+
 	private final World world;
 	private final net.minecraft.server.WorldBorder handle;
 
@@ -16,7 +19,7 @@ public class CraftWorldBorder implements WorldBorder {
 
 	@Override
 	public void reset() {
-		this.setSize(6.0E7D);
+		this.setSize(net.minecraft.server.WorldBorder.MAX_SIZE);
 		this.setDamageAmount(0.2D);
 		this.setDamageBuffer(5.0D);
 		this.setWarningDistance(5);
@@ -36,9 +39,8 @@ public class CraftWorldBorder implements WorldBorder {
 
 	@Override
 	public void setSize(double newSize, long time) {
-		// PAIL: TODO: Magic Values
-		newSize = Math.min(6.0E7D, Math.max(1.0D, newSize));
-		time = Math.min(9223372036854775L, Math.max(0L, time));
+		newSize = Math.min(this.getMaxSize(), Math.max(net.minecraft.server.WorldBorder.MIN_SIZE, newSize));
+		time = Math.min(MAX_SIZE_TRANSITION_SECONDS, Math.max(0L, time));
 
 		if (time > 0L) {
 			this.handle.transitionSizeBetween(this.handle.getSize(), newSize, time * 1000L);
@@ -57,9 +59,9 @@ public class CraftWorldBorder implements WorldBorder {
 
 	@Override
 	public void setCenter(double x, double z) {
-		// PAIL: TODO: Magic Values
-		x = Math.min(3.0E7D, Math.max(-3.0E7D, x));
-		z = Math.min(3.0E7D, Math.max(-3.0E7D, z));
+		double max = this.getMaxCenterCoordinate();
+		x = Math.min(max, Math.max(-max, x));
+		z = Math.min(max, Math.max(-max, z));
 
 		this.handle.setCenter(x, z);
 	}
@@ -107,5 +109,15 @@ public class CraftWorldBorder implements WorldBorder {
 	@Override
 	public void setWarningDistance(int distance) {
 		this.handle.setWarningDistance(distance);
+	}
+
+	@Override
+	public double getMaxSize() {
+		return net.minecraft.server.WorldBorder.MAX_SIZE;
+	}
+
+	@Override
+	public double getMaxCenterCoordinate() {
+		return net.minecraft.server.WorldBorder.MAX_CENTER_COORDINATE;
 	}
 }
