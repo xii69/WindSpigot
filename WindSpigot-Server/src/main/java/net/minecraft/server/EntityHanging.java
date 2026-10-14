@@ -248,10 +248,9 @@ public abstract class EntityHanging extends Entity {
 				return; // CraftBukkit
 			}
 
-			// CraftBukkit start - fire break events
-			// TODO - Does this need its own cause? Seems to only be triggered by pistons
+			// CraftBukkit / WindSpigot - move() on hangings is piston push
 			HangingBreakEvent event = new HangingBreakEvent((Hanging) this.getBukkitEntity(),
-					HangingBreakEvent.RemoveCause.PHYSICS);
+					HangingBreakEvent.RemoveCause.PISTON);
 			this.world.getServer().getPluginManager().callEvent(event);
 
 			if (this.dead || event.isCancelled()) {
