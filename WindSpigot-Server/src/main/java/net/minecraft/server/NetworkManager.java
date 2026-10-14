@@ -69,6 +69,10 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
 	public com.mojang.authlib.properties.Property[] spoofedProfile;
 	public boolean preparing = true;
 	// Spigot End
+	// Paper start - NetworkClient API
+	public int protocolVersion;
+	public java.net.InetSocketAddress virtualHost;
+	// Paper end
 	private PacketListener m;
 	private IChatBaseComponent n;
 	private boolean o;

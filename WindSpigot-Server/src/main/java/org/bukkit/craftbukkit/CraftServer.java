@@ -1939,6 +1939,23 @@ public final class CraftServer implements Server {
 		return icon;
 	}
 
+	// Paper start - PlayerProfile API
+	@Override
+	public com.destroystokyo.paper.profile.PlayerProfile createProfile(java.util.UUID uuid) {
+		return createProfile(uuid, null);
+	}
+
+	@Override
+	public com.destroystokyo.paper.profile.PlayerProfile createProfile(String name) {
+		return createProfile(null, name);
+	}
+
+	@Override
+	public com.destroystokyo.paper.profile.PlayerProfile createProfile(java.util.UUID uuid, String name) {
+		return new com.destroystokyo.paper.profile.CraftPlayerProfile(uuid, name);
+	}
+	// Paper end
+
 	@Override
 	public CraftIconCache loadServerIcon(File file) throws Exception {
 		Validate.notNull(file, "File cannot be null");
