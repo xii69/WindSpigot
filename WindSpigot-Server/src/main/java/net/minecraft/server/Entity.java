@@ -1579,20 +1579,14 @@ public abstract class Entity implements ICommandListener {
 			}
 			// CraftBukkit end
 
-			// CraftBukkit start - Reset world
+			// CraftBukkit start - Reset world (WindSpigot: WorldUID only, no legacy "world" name)
 			if (this instanceof EntityPlayer) {
 				Server server = Bukkit.getServer();
 				org.bukkit.World bworld = null;
-
-				// TODO: Remove World related checks, replaced with WorldUID
-				String worldName = nbttagcompound.getString("world");
-
 				if (nbttagcompound.hasKey("WorldUUIDMost") && nbttagcompound.hasKey("WorldUUIDLeast")) {
 					UUID uid = new UUID(nbttagcompound.getLong("WorldUUIDMost"),
 							nbttagcompound.getLong("WorldUUIDLeast"));
 					bworld = server.getWorld(uid);
-				} else {
-					bworld = server.getWorld(worldName);
 				}
 
 				if (bworld == null) {
