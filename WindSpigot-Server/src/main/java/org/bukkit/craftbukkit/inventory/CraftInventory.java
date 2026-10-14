@@ -3,6 +3,7 @@ package org.bukkit.craftbukkit.inventory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 
 import org.apache.commons.lang.Validate;
 import org.bukkit.Material;
@@ -245,8 +246,12 @@ public class CraftInventory implements Inventory {
 
 	@Override
 	public int firstEmpty() {
+		return firstEmpty(0);
+	}
+
+	private int firstEmpty(int fromIndex) {
 		ItemStack[] inventory = getContents();
-		for (int i = 0; i < inventory.length; i++) {
+		for (int i = Math.max(0, fromIndex); i < inventory.length; i++) {
 			if (inventory[i] == null) {
 				return i;
 			}
@@ -271,12 +276,16 @@ public class CraftInventory implements Inventory {
 	}
 
 	private int firstPartial(ItemStack item) {
-		ItemStack[] inventory = getContents();
-		ItemStack filteredItem = CraftItemStack.asCraftCopy(item);
+		return firstPartial(item, 0);
+	}
+
+	private int firstPartial(ItemStack item, int fromIndex) {
 		if (item == null) {
 			return -1;
 		}
-		for (int i = 0; i < inventory.length; i++) {
+		ItemStack[] inventory = getContents();
+		ItemStack filteredItem = CraftItemStack.asCraftCopy(item);
+		for (int i = Math.max(0, fromIndex); i < inventory.length; i++) {
 			ItemStack cItem = inventory[i];
 			if (cItem != null && cItem.getAmount() < cItem.getMaxStackSize() && cItem.isSimilar(filteredItem)) {
 				return i;
@@ -285,30 +294,51 @@ public class CraftInventory implements Inventory {
 		return -1;
 	}
 
+	// WindSpigot - reuse partial cursor only when probe isSimilar
+	private int firstPartialCached(ItemStack item, Map<Material, Integer> lastPartialFrom,
+			Map<Material, ItemStack> lastPartialProbe) {
+		Material type = item.getType();
+		Integer cursor = lastPartialFrom.get(type);
+		ItemStack probe = lastPartialProbe.get(type);
+		int fromIndex = 0;
+		if (cursor != null && probe != null && probe.isSimilar(item)) {
+			fromIndex = cursor.intValue();
+		}
+		return firstPartial(item, fromIndex);
+	}
+
+	private void rememberPartial(Material type, ItemStack item, int index, boolean slotStillPartial,
+			Map<Material, Integer> lastPartialFrom, Map<Material, ItemStack> lastPartialProbe) {
+		lastPartialFrom.put(type, Integer.valueOf(slotStillPartial ? index : index + 1));
+		lastPartialProbe.put(type, CraftItemStack.asCraftCopy(item));
+	}
+
 	@Override
 	public HashMap<Integer, ItemStack> addItem(ItemStack... items) {
 		Validate.noNullElements(items, "Item cannot be null");
 		HashMap<Integer, ItemStack> leftover = new HashMap<Integer, ItemStack>();
 
-		/*
-		 * TODO: some optimization - Create a 'firstPartial' with a 'fromIndex' - Record
-		 * the lastPartial per Material - Cache firstEmpty result
-		 */
+		// WindSpigot - firstPartial(fromIndex) + lastPartial + cached firstEmpty
+		Map<Material, Integer> lastPartialFrom = new HashMap<Material, Integer>();
+		Map<Material, ItemStack> lastPartialProbe = new HashMap<Material, ItemStack>();
+		int cachedFirstEmpty = 0;
 
 		for (int i = 0; i < items.length; i++) {
 			ItemStack item = items[i];
+			Material type = item.getType();
 			while (true) {
 				// Do we already have a stack of it?
-				int firstPartial = firstPartial(item);
+				int firstPartial = firstPartialCached(item, lastPartialFrom, lastPartialProbe);
 
 				// Drat! no partial stack
 				if (firstPartial == -1) {
 					// Find a free spot!
-					int firstFree = firstEmpty();
+					int firstFree = firstEmpty(cachedFirstEmpty);
 
 					if (firstFree == -1) {
 						// No space at all!
 						leftover.put(i, item);
+						cachedFirstEmpty = getSize();
 						break;
 					} else // More than a single stack!
 					if (item.getAmount() > getMaxItemStack()) {
@@ -316,9 +346,14 @@ public class CraftInventory implements Inventory {
 						stack.setAmount(getMaxItemStack());
 						setItem(firstFree, stack);
 						item.setAmount(item.getAmount() - getMaxItemStack());
+						cachedFirstEmpty = firstFree + 1;
 					} else {
 						// Just store it
 						setItem(firstFree, item);
+						cachedFirstEmpty = firstFree + 1;
+						if (item.getAmount() < item.getMaxStackSize()) {
+							rememberPartial(type, item, firstFree, true, lastPartialFrom, lastPartialProbe);
+						}
 						break;
 					}
 				} else {
@@ -334,6 +369,8 @@ public class CraftInventory implements Inventory {
 						partialItem.setAmount(amount + partialAmount);
 						// To make sure the packet is sent to the client
 						setItem(firstPartial, partialItem);
+						rememberPartial(type, item, firstPartial, partialItem.getAmount() < maxAmount,
+								lastPartialFrom, lastPartialProbe);
 						break;
 					}
 
@@ -342,6 +379,7 @@ public class CraftInventory implements Inventory {
 					// To make sure the packet is sent to the client
 					setItem(firstPartial, partialItem);
 					item.setAmount(amount + partialAmount - maxAmount);
+					rememberPartial(type, item, firstPartial, false, lastPartialFrom, lastPartialProbe);
 				}
 			}
 		}
