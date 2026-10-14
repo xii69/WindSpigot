@@ -29,7 +29,6 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.craftbukkit.block.CraftBlock;
 import org.bukkit.craftbukkit.block.CraftBlockState;
-import org.bukkit.craftbukkit.entity.CraftItem;
 import org.bukkit.craftbukkit.entity.CraftLightningStrike;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
@@ -440,10 +439,7 @@ public class CraftWorld implements World {
 			world.addEntity(entity);
 		}
 
-		// TODO this is inconsistent with how Entity.getBukkitEntity() works.
-		// However, this entity is not at the moment backed by a server entity class so
-		// it may be left.
-		return new CraftItem(world.getServer(), entity);
+		return (org.bukkit.entity.Item) entity.getBukkitEntity(); // WindSpigot - cached CraftEntity
 	}
 
 	private static void randomLocationWithinBlock(Location loc, double xs, double ys, double zs) {
