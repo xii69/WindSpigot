@@ -962,7 +962,10 @@ class CraftMetaItem implements ItemMeta, Repairable {
 
 	@Override
 	public final String toString() {
-		return SerializableMeta.classMap.get(getClass()) + "_META:" + serialize(); // TODO: cry
+		// Use the serialized meta-type key as the single source of truth for the
+		// debug prefix (same value serialize() writes under TYPE_FIELD).
+		Map<String, Object> serialized = serialize();
+		return serialized.get(SerializableMeta.TYPE_FIELD) + "_META:" + serialized;
 	}
 
 	public static Set<String> getHandledTags() {
