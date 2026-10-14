@@ -1,8 +1,11 @@
 package org.bukkit.craftbukkit.util;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,6 +32,32 @@ import net.minecraft.server.StatisticList;
 public final class CraftMagicNumbers implements UnsafeValues {
 	public static final UnsafeValues INSTANCE = new CraftMagicNumbers();
 
+	// WindSpigot start - Material↔NMS maps (bootstrap from IDs once)
+	private static final class MaterialMaps {
+		static final Map<Material, Item> MATERIAL_ITEM = new EnumMap<Material, Item>(Material.class);
+		static final Map<Material, Block> MATERIAL_BLOCK = new EnumMap<Material, Block>(Material.class);
+		static final Map<Item, Material> ITEM_MATERIAL = new IdentityHashMap<Item, Material>();
+
+		static {
+			for (Material material : Material.values()) {
+				Item item = Item.getById(material.getId());
+				if (item != null) {
+					MATERIAL_ITEM.put(material, item);
+					ITEM_MATERIAL.put(item, material);
+				}
+
+				Block block = Block.getById(material.getId());
+				if (block != null) {
+					MATERIAL_BLOCK.put(material, block);
+				}
+			}
+		}
+
+		private MaterialMaps() {
+		}
+	}
+	// WindSpigot end
+
 	private CraftMagicNumbers() {
 	}
 
@@ -53,8 +82,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
 	}
 
 	public static Item getItem(Material material) {
-		// TODO: Don't use ID
-		return Item.getById(material.getId());
+		return MaterialMaps.MATERIAL_ITEM.get(material);
 	}
 
 	@Deprecated
@@ -70,8 +98,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
 	}
 
 	public static Material getMaterial(Item item) {
-		// TODO: Don't use ID
-		Material material = Material.getMaterial(Item.getId(item));
+		Material material = MaterialMaps.ITEM_MATERIAL.get(item);
 
 		if (material == null) {
 			return Material.AIR;
@@ -81,8 +108,7 @@ public final class CraftMagicNumbers implements UnsafeValues {
 	}
 
 	public static Block getBlock(Material material) {
-		// TODO: Don't use ID
-		Block block = Block.getById(material.getId());
+		Block block = MaterialMaps.MATERIAL_BLOCK.get(material);
 
 		if (block == null) {
 			return Blocks.AIR;
