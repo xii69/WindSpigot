@@ -25,6 +25,7 @@ public class EnchantItemEvent extends InventoryEvent implements Cancellable {
 	private final Map<Enchantment, Integer> enchants;
 	private final Player enchanter;
 	private int button;
+	private int itemCost;
 
 	public EnchantItemEvent(final Player enchanter, final InventoryView view, final Block table, final ItemStack item,
 			final int level, final Map<Enchantment, Integer> enchants, final int i) {
@@ -36,6 +37,8 @@ public class EnchantItemEvent extends InventoryEvent implements Cancellable {
 		this.enchants = new HashMap<Enchantment, Integer>(enchants);
 		this.cancelled = false;
 		this.button = i;
+		// Vanilla: lapis consumed equals button index + 1 (1, 2, or 3)
+		this.itemCost = i + 1;
 	}
 
 	/**
@@ -101,6 +104,31 @@ public class EnchantItemEvent extends InventoryEvent implements Cancellable {
 	 */
 	public int whichButton() {
 		return button;
+	}
+
+	/**
+	 * Gets the number of cost items (lapis lazuli) that will be consumed.
+	 * Defaults to {@link #whichButton()}{@code + 1} (vanilla 1, 2, or 3).
+	 *
+	 * @return cost item count to consume from the enchanting table's lapis slot
+	 */
+	public int getItemCost() {
+		return itemCost;
+	}
+
+	/**
+	 * Sets the number of cost items (lapis lazuli) that will be consumed.
+	 * Use {@code 0} for a free enchant (no lapis). Does not change experience
+	 * level cost; see {@link #setExpLevelCost(int)}.
+	 *
+	 * @param itemCost cost item count; must be {@code >= 0}
+	 * @throws IllegalArgumentException if {@code itemCost} is negative
+	 */
+	public void setItemCost(int itemCost) {
+		if (itemCost < 0) {
+			throw new IllegalArgumentException("Item cost cannot be negative");
+		}
+		this.itemCost = itemCost;
 	}
 
 	public boolean isCancelled() {

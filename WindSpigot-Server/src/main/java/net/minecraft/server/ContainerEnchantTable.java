@@ -248,9 +248,15 @@ public class ContainerEnchantTable extends Container {
 					this.world.getServer().getPluginManager().callEvent(event);
 
 					int level = event.getExpLevelCost();
+					int lapisCost = event.getItemCost();
+					// Re-read cost slot in case a plugin mutated the view during the event
+					itemstack1 = this.enchantSlots.getItem(1);
+					int lapisAvailable = itemstack1 == null ? 0 : itemstack1.count;
 					if (event.isCancelled()
 							|| (level > entityhuman.expLevel && !entityhuman.abilities.canInstantlyBuild)
-							|| event.getEnchantsToAdd().isEmpty()) {
+							|| event.getEnchantsToAdd().isEmpty()
+							|| !(entityhuman.abilities.canInstantlyBuild || lapisCost <= 0
+									|| lapisAvailable >= lapisCost)) {
 						return false;
 					}
 					if (flag) {
@@ -280,9 +286,9 @@ public class ContainerEnchantTable extends Container {
 					entityhuman.enchantDone(j);
 					// CraftBukkit end
 
-					// CraftBukkit - TODO: let plugins change this
-					if (!entityhuman.abilities.canInstantlyBuild) {
-						itemstack1.count -= j;
+					// WindSpigot - honor EnchantItemEvent.getItemCost() for lapis
+					if (!entityhuman.abilities.canInstantlyBuild && lapisCost > 0) {
+						itemstack1.count -= lapisCost;
 						if (itemstack1.count <= 0) {
 							this.enchantSlots.setItem(1, (ItemStack) null);
 						}
