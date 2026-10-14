@@ -486,8 +486,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
 
 		String deathMessage = event.getDeathMessage();
 
-		if (deathMessage != null && deathMessage.length() > 0
-				&& this.world.getGameRules().getBoolean("showDeathMessages")) { // TODO: allow plugins to override?
+		if (deathMessage != null && deathMessage.length() > 0 && event.getShowDeathMessages()) {
 			if (deathMessage.equals(deathmessage)) {
 				this.server.getPlayerList().sendMessage(chatmessage);
 			} else {
