@@ -490,7 +490,9 @@ public class CraftEventFactory {
 	public static PlayerDeathEvent callPlayerDeathEvent(EntityPlayer victim, List<org.bukkit.inventory.ItemStack> drops,
 			String deathMessage, boolean keepInventory) {
 		CraftPlayer entity = victim.getBukkitEntity();
-		PlayerDeathEvent event = new PlayerDeathEvent(entity, drops, victim.getExpReward(), 0, deathMessage);
+		boolean showDeathMessages = victim.world.getGameRules().getBoolean("showDeathMessages");
+		PlayerDeathEvent event = new PlayerDeathEvent(entity, drops, victim.getExpReward(), 0, 0, 0, deathMessage,
+				showDeathMessages);
 		event.setKeepInventory(keepInventory);
 		org.bukkit.World world = entity.getWorld();
 		Bukkit.getServer().getPluginManager().callEvent(event);

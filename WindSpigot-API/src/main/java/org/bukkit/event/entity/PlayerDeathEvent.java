@@ -15,6 +15,7 @@ public class PlayerDeathEvent extends EntityDeathEvent {
 	private int newTotalExp = 0;
 	private boolean keepLevel = false;
 	private boolean keepInventory = false;
+	private boolean showDeathMessages = true;
 
 	public PlayerDeathEvent(final Player player, final List<ItemStack> drops, final int droppedExp,
 			final String deathMessage) {
@@ -28,11 +29,17 @@ public class PlayerDeathEvent extends EntityDeathEvent {
 
 	public PlayerDeathEvent(final Player player, final List<ItemStack> drops, final int droppedExp, final int newExp,
 			final int newTotalExp, final int newLevel, final String deathMessage) {
+		this(player, drops, droppedExp, newExp, newTotalExp, newLevel, deathMessage, true);
+	}
+
+	public PlayerDeathEvent(final Player player, final List<ItemStack> drops, final int droppedExp, final int newExp,
+			final int newTotalExp, final int newLevel, final String deathMessage, final boolean showDeathMessages) {
 		super(player, drops, droppedExp);
 		this.newExp = newExp;
 		this.newTotalExp = newTotalExp;
 		this.newLevel = newLevel;
 		this.deathMessage = deathMessage;
+		this.showDeathMessages = showDeathMessages;
 	}
 
 	@Override
@@ -56,6 +63,32 @@ public class PlayerDeathEvent extends EntityDeathEvent {
 	 */
 	public String getDeathMessage() {
 		return deathMessage;
+	}
+
+	/**
+	 * Get whether the death message should be shown.
+	 * <p>
+	 * By default, this is determined by the {@code showDeathMessages} game rule.
+	 * Plugins may override that value via {@link #setShowDeathMessages(boolean)}.
+	 *
+	 * @return whether the death message should be shown
+	 * @see #setDeathMessage(String)
+	 */
+	public boolean getShowDeathMessages() {
+		return showDeathMessages;
+	}
+
+	/**
+	 * Set whether the death message should be shown.
+	 * <p>
+	 * By default, this is determined by the {@code showDeathMessages} game rule.
+	 * Calling this overrides that rule for this death only.
+	 *
+	 * @param showDeathMessages whether the death message should be shown
+	 * @see #setDeathMessage(String)
+	 */
+	public void setShowDeathMessages(boolean showDeathMessages) {
+		this.showDeathMessages = showDeathMessages;
 	}
 
 	/**
