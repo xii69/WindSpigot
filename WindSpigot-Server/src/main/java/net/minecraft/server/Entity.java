@@ -2269,12 +2269,8 @@ public abstract class Entity implements ICommandListener {
 		int i = worldserver1.dimension;
 		// CraftBukkit end
 
+		// WindSpigot - End→Overworld remap lives in PlayerList.calculateTarget; trust exit Location
 		this.dimension = i;
-		/*
-		 * CraftBukkit start - TODO: Check if we need this if (j == 1 && i == 1) {
-		 * worldserver1 = minecraftserver.getWorldServer(0); this.dimension = 0; } //
-		 * CraftBukkit end
-		 */
 
 		this.world.kill(this);
 		this.dead = false;
@@ -2293,13 +2289,6 @@ public abstract class Entity implements ICommandListener {
 
 		if (entity != null) {
 			entity.n(this);
-			/*
-			 * CraftBukkit start - We need to do this... if (j == 1 && i == 1) {
-			 * BlockPosition blockposition = this.world.r(worldserver1.getSpawn());
-			 * 
-			 * entity.setPositionRotation(blockposition, entity.yaw, entity.pitch); } //
-			 * CraftBukkit end
-			 */
 
 			worldserver1.addEntity(entity);
 			// CraftBukkit start - Forward the CraftEntity to the new entity
