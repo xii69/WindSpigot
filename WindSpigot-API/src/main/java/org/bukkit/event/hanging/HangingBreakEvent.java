@@ -55,6 +55,10 @@ public class HangingBreakEvent extends HangingEvent implements Cancellable {
 		 */
 		PHYSICS,
 		/**
+		 * Removed by a piston pushing the hanging entity
+		 */
+		PISTON,
+		/**
 		 * Removed by an uncategorised cause
 		 */
 		DEFAULT,
